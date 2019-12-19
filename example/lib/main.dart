@@ -18,7 +18,7 @@ final config = defaultTargetPlatform == TargetPlatform.iOS
         'nativeID': '2000629911207832',
         'intersID': '3040652898151811',
         'splashID': '8863364436303842593',
-        'bgPic': 'tencent.ad:mipmap/splash_img'
+        'bgPic': 'tencent.ad_example:mipmap/splash_img'
       };
 
 void main() {
