@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
+import 'tencent_ad.dart';
 
-import '../export.dart';
 import 'o.dart';
 
 typedef IntersADCallback = Function(IntersEvent event, dynamic arguments);

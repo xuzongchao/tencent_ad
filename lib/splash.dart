@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:tencent_ad/export.dart';
+import 'tencent_ad.dart';
 import 'o.dart';
 
 enum SplashAdEvent {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:tencent_ad/export.dart';
 import 'package:flutter/services.dart';
+import 'package:tencent_ad/tencent_ad.dart';
 
 final config = defaultTargetPlatform == TargetPlatform.iOS
     ? {

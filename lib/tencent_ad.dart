@@ -1,9 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-
 import 'o.dart';
+export 'tencent_ad.dart';
+export 'native.dart';
+export 'splash.dart';
+export 'banner.dart';
+export 'inters.dart';
 
 class TencentAD {
   static const MethodChannel channel = const MethodChannel(PLUGIN_ID);

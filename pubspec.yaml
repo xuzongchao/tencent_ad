@@ -1,8 +1,7 @@
 name: tencent_ad
 description: 腾讯广告插件
-version: 0.0.1
-author:
-homepage:
+version: 1.0.0
+homepage: https://github.com/Mr-Cai/tencent_ad
 environment:
   sdk: ">=2.6.0 <3.0.0"
 dependencies:
@@ -18,7 +17,7 @@ flutter:
         package: tencent.ad
         pluginClass: TencentAD
       ios:
-        pluginClass: TencentAdPlugin
+        pluginClass: TencentAD
         
   
   
