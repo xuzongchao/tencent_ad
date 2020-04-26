@@ -1,8 +1,6 @@
 package tencent.ad
 
 import android.util.Log
-import tencent.ad.O.APP_ID
-import tencent.ad.O.TAG
 import com.qq.e.ads.cfg.VideoOption
 import com.qq.e.ads.interstitial2.UnifiedInterstitialAD
 import com.qq.e.ads.interstitial2.UnifiedInterstitialADListener
@@ -12,6 +10,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import tencent.ad.O.APP_ID
+import tencent.ad.O.TAG
 import tencent.ad.TencentAD.Companion.activity
 
 class IntersAD(private val posId: String, messenger: BinaryMessenger) :
@@ -71,38 +71,17 @@ class IntersAD(private val posId: String, messenger: BinaryMessenger) :
         TencentAD.removeInterstitial(posId)
     }
 
-    override fun onNoAD(e: AdError) {
-        Log.i(TAG, "IntersAD onNoAD:无广告 错误码:${e.errorCode} ${e.errorMsg}")
+    override fun onNoAD(error: AdError) {
+        Log.i(TAG, "IntersAD onNoAD:无广告 错误码:${error.errorCode} ${error.errorMsg}")
         intersAD = null
-        methodChannel.invokeMethod("onNoAD", e.errorCode)
+        methodChannel.invokeMethod("onNoAD", error)
     }
 
-
-    override fun onADExposure() {
-        methodChannel.invokeMethod("onADExposure", null)
-    }
-
-    override fun onVideoCached() {
-        methodChannel.invokeMethod("onVideoCached", null)
-    }
-
-    override fun onADOpened() {
-        methodChannel.invokeMethod("onADOpened", null)
-    }
-
-    override fun onADClosed() {
-        methodChannel.invokeMethod("onADClosed", null)
-    }
-
-    override fun onADLeftApplication() {
-        methodChannel.invokeMethod("onADLeftApplication", null)
-    }
-
-    override fun onADReceive() {
-        methodChannel.invokeMethod("onADReceive", null)
-    }
-
-    override fun onADClicked() {
-        methodChannel.invokeMethod("onADClicked", null)
-    }
+    override fun onADExposure() = methodChannel.invokeMethod("onADExposure", null)
+    override fun onVideoCached() = methodChannel.invokeMethod("onVideoCached", null)
+    override fun onADOpened() = methodChannel.invokeMethod("onADOpened", null)
+    override fun onADClosed() = methodChannel.invokeMethod("onADClosed", null)
+    override fun onADLeftApplication() = methodChannel.invokeMethod("onADLeftApplication", null)
+    override fun onADReceive() = methodChannel.invokeMethod("onADReceive", null)
+    override fun onADClicked() = methodChannel.invokeMethod("onADClicked", null)
 }

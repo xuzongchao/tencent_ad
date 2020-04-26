@@ -1,4 +1,4 @@
-#import "TencentAD.h"
+#import "TencentADPlugin.h"
 #if __has_include(<tencent_ad/tencent_ad-Swift.h>)
 #import <tencent_ad/tencent_ad-Swift.h>
 #else
@@ -8,8 +8,8 @@
 #import "tencent_ad-Swift.h"
 #endif
 
-@implementation TencentAD
+@implementation TencentADPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftTencentAD registerWithRegistrar:registrar];
+  [SwiftTencentADPlugin registerWithRegistrar:registrar];
 }
 @end

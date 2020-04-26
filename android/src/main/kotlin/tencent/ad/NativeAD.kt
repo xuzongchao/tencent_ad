@@ -115,6 +115,17 @@ class NativeAD(
         methodChannel.invokeMethod("onAdLoaded", null)
     }
 
+
+    override fun onADClosed(nativeExpressADView: NativeExpressADView) {
+        // 广告模板关闭后原生渲染广告也会被释放, 不可再复用
+        if (container.childCount > 0) {
+            container.removeAllViews()
+            nativeExpressADView.destroy()
+            container.visibility = View.GONE
+        }
+        methodChannel.invokeMethod("onAdClosed", null)
+    }
+
     override fun onRenderFail(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onRenderFail", null)
 
@@ -126,16 +137,6 @@ class NativeAD(
 
     override fun onADClicked(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onAdClicked", null)
-
-    override fun onADClosed(nativeExpressADView: NativeExpressADView) {
-        // 广告模板关闭后原生渲染广告也会被释放, 不可再复用
-        if (container.childCount > 0) {
-            container.removeAllViews()
-            nativeExpressADView.destroy()
-            container.visibility = View.GONE
-        }
-        methodChannel.invokeMethod("onAdClosed", null)
-    }
 
     override fun onADLeftApplication(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onAdLeftApplication", null)

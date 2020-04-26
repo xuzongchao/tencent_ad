@@ -73,21 +73,6 @@ class SplashAD(
         closeAD()
     }
 
-    override fun onADPresent() {
-        methodChannel.invokeMethod("onAdPresent", null)
-    }
-
-    override fun onADClicked() {
-        methodChannel.invokeMethod("onADClicked", null)
-    }
-
-    override fun onADTick(ms: Long) {
-        Log.i(TAG, "onADTick: $ms")
-    }
-
-    override fun onADExposure() = methodChannel.invokeMethod("onADExposure", null)
-
-
     init {
         container.setBackgroundColor(Color.WHITE)
         if (bgPic != null) {
@@ -104,4 +89,10 @@ class SplashAD(
         container.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
         activity.addContentView(container, LayoutParams(MATCH_PARENT, MATCH_PARENT))
     }
+
+    override fun onADPresent() = methodChannel.invokeMethod("onAdPresent", null)
+    override fun onADLoaded(time: Long) = methodChannel.invokeMethod("onADLoaded", time)
+    override fun onADClicked() = methodChannel.invokeMethod("onADClicked", null)
+    override fun onADTick(time: Long) = methodChannel.invokeMethod("onADTick", time)
+    override fun onADExposure() = methodChannel.invokeMethod("onADExposure", null)
 }

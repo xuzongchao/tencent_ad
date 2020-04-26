@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tencent_ad/tencent_ad.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('tencent_ad');
@@ -14,5 +15,9 @@ void main() {
 
   tearDown(() {
     channel.setMockMethodCallHandler(null);
+  });
+
+  test('getPlatformVersion', () async {
+    expect(await TencentAd.platformVersion, '42');
   });
 }
