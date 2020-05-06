@@ -3,6 +3,7 @@ package tencent.ad
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.READ_PHONE_STATE
 import android.annotation.TargetApi
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -11,6 +12,9 @@ import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.provider.Settings
 import android.util.Log
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import com.qq.e.ads.cfg.GDTAD
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -30,6 +34,9 @@ class TencentAD : MethodCallHandler, RequestPermissionsResultListener {
     private var fineLOC = 0
     private var requestCode = 0
 
+    public fun StartWork(){
+    }
+
     override fun onMethodCall(call: MethodCall, result: Result) {
         val arguments = call.arguments as Map<*, *>
         when (call.method) {
@@ -37,8 +44,13 @@ class TencentAD : MethodCallHandler, RequestPermissionsResultListener {
                 O.APP_ID = "${arguments["appID"]}"
                 phoneSTAT = 0
                 fineLOC = 0
+                GDTAD.initSDK(acts,O.APP_ID, GDTAD.InitListener {
+                    Log.e("eee66","ffff")
+                })
+
                 when {
-                    arguments.containsKey("phoneSTAT") -> phoneSTAT = arguments["phoneSTAT"] as Int
+
+                            arguments.containsKey("phoneSTAT") -> phoneSTAT = arguments["phoneSTAT"] as Int
                     arguments.containsKey("fineLOC") -> fineLOC = arguments["fineLOC"] as Int
                     // 监测权限
                     SDK_INT >= 23 && (phoneSTAT > 0 || fineLOC > 0) -> {
@@ -140,7 +152,8 @@ class TencentAD : MethodCallHandler, RequestPermissionsResultListener {
         private lateinit var registrar: Registrar
         private lateinit var instance: TencentAD
         private val UNIFIED_INTERS_AD_MAP: MutableMap<String, IntersAD?> = HashMap()
-        internal val activity get() = registrar.activity()
+        internal val activity get() = acts
+        public lateinit var acts: Activity
 
         // 插件注册
         @JvmStatic
