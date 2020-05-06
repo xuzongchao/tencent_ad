@@ -2,6 +2,8 @@ package tencent.ad
 
 import android.content.Context
 import android.content.res.Resources
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.View.MeasureSpec.*
@@ -10,6 +12,7 @@ import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import android.widget.FrameLayout.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+import com.qq.e.ads.cfg.DownAPPConfirmPolicy
 import com.qq.e.ads.cfg.VideoOption.AutoPlayPolicy.WIFI
 import com.qq.e.ads.cfg.VideoOption.Builder
 import com.qq.e.ads.nativ.ADSize
@@ -53,6 +56,7 @@ class NativeAD(
         if (params.containsKey("count") && params["count"] != null) {
             count = params["count"] as Int
         }
+        nativeExpressAD.setDownAPPConfirmPolicy(DownAPPConfirmPolicy.NOConfirm)
     }
 
     override fun onMethodCall(methodCall: MethodCall, result: Result) {
@@ -94,6 +98,7 @@ class NativeAD(
         params["width"] = container.measuredWidth / displayMetrics.density
         params["height"] = container.measuredHeight / displayMetrics.density
         methodChannel.invokeMethod("onLayoutChange", params)
+
     }
 
     override fun onNoAD(e: AdError) {
@@ -102,6 +107,7 @@ class NativeAD(
     }
 
     override fun onADLoaded(adList: List<NativeExpressADView>) {
+
         when {
             nativeExpressADView != null -> nativeExpressADView!!.destroy()
             // 广告可见才会产生曝光，否则将无法产生收益。
@@ -118,8 +124,9 @@ class NativeAD(
     override fun onRenderFail(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onRenderFail", null)
 
-    override fun onRenderSuccess(nativeExpressADView: NativeExpressADView) =
-            methodChannel.invokeMethod("onRenderSuccess", null)
+    override fun onRenderSuccess(nativeExpressADView: NativeExpressADView) {
+        methodChannel.invokeMethod("onRenderSuccess", null)
+    }
 
     override fun onADExposure(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onAdExposure", null)
@@ -140,8 +147,13 @@ class NativeAD(
     override fun onADLeftApplication(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onAdLeftApplication", null)
 
-    override fun onADOpenOverlay(nativeExpressADView: NativeExpressADView) =
-            methodChannel.invokeMethod("onAdOpenOverlay", null)
+    override fun onADOpenOverlay(nativeExpressADView: NativeExpressADView){
+        Handler(Looper.getMainLooper()).post(Runnable {
+            fun run(){
+                methodChannel.invokeMethod("onAdOpenOverlay", null)
+            }
+        })
+    }
 
     override fun onADCloseOverlay(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onAdCloseOverlay", null)
