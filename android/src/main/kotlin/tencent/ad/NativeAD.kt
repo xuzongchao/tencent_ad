@@ -27,6 +27,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.platform.PlatformView
 import tencent.ad.O.TAG
+import java.lang.annotation.Native
 
 class NativeAD(
         context: Context,
@@ -46,6 +47,7 @@ class NativeAD(
             posId,
             this
     )
+    private var adList: List<NativeExpressADView> = ArrayList()
 
     init {
         checkNotNull(O.APP_ID) { "在创建广告视图之前，必须先配置应用ID" }
@@ -69,6 +71,10 @@ class NativeAD(
                 nativeExpressADView!!.destroy()
                 result.success(true)
             }
+            "show" -> {
+                show()
+                result.success(true)
+            }
             else -> result.notImplemented()
         }
     }
@@ -88,6 +94,42 @@ class NativeAD(
         nativeExpressAD.loadAD(count)
     }
 
+
+///展示广告，比较缓存列表中所有广告，选择ecpm价格最高的展示
+    private fun show(){
+//      start-checkcount：检查缓存列表里是否有广告
+        if(adList.count() ==0){
+            return
+        }
+//      end-checkcount
+
+//      start-getbest:选择价格最高的广告
+        var current = adList[0]
+        for (index in 0 .. adList.count() - 1){
+            val now = adList[index]
+            if(now.boundData.ecpm > current.boundData.ecpm){
+                current = now
+            }
+        }
+//      end-getbest
+
+//      start-renderad:普光选中的广告
+        when {
+            nativeExpressADView != null -> nativeExpressADView!!.destroy()
+            // 广告可见才会产生曝光，否则将无法产生收益。
+            container.visibility != View.VISIBLE -> container.visibility = View.VISIBLE
+            container.childCount > 0 -> container.removeAllViews()
+        }
+        nativeExpressADView = current
+        nativeExpressADView!!.addOnLayoutChangeListener(this)
+        container.addView(nativeExpressADView)
+        nativeExpressADView!!.render()  // 广告可见才会产生曝光，否则将无法产生收益。
+        methodChannel.invokeMethod("onAdLoaded", null)
+//      end-renderad
+    }
+
+
+
     override fun onLayoutChange(view: View?, left: Int, top: Int, right: Int, bottom: Int,
                                 oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
         val displayMetrics = Resources.getSystem().displayMetrics
@@ -106,19 +148,9 @@ class NativeAD(
         methodChannel.invokeMethod("onNoAD", null)
     }
 
-    override fun onADLoaded(adList: List<NativeExpressADView>) {
 
-        when {
-            nativeExpressADView != null -> nativeExpressADView!!.destroy()
-            // 广告可见才会产生曝光，否则将无法产生收益。
-            container.visibility != View.VISIBLE -> container.visibility = View.VISIBLE
-            container.childCount > 0 -> container.removeAllViews()
-        }
-        nativeExpressADView = adList[0]
-        nativeExpressADView!!.addOnLayoutChangeListener(this)
-        container.addView(nativeExpressADView)
-        nativeExpressADView!!.render()  // 广告可见才会产生曝光，否则将无法产生收益。
-        methodChannel.invokeMethod("onAdLoaded", null)
+    override fun onADLoaded(adList: List<NativeExpressADView>) {
+        this.adList = adList
     }
 
     override fun onRenderFail(nativeExpressADView: NativeExpressADView) =

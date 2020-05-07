@@ -34,9 +34,6 @@ class TencentAD : MethodCallHandler, RequestPermissionsResultListener {
     private var fineLOC = 0
     private var requestCode = 0
 
-    public fun StartWork(){
-    }
-
     override fun onMethodCall(call: MethodCall, result: Result) {
         val arguments = call.arguments as Map<*, *>
         when (call.method) {
@@ -44,12 +41,8 @@ class TencentAD : MethodCallHandler, RequestPermissionsResultListener {
                 O.APP_ID = "${arguments["appID"]}"
                 phoneSTAT = 0
                 fineLOC = 0
-                GDTAD.initSDK(acts,O.APP_ID, GDTAD.InitListener {
-                    Log.e("eee66","ffff")
-                })
 
                 when {
-
                             arguments.containsKey("phoneSTAT") -> phoneSTAT = arguments["phoneSTAT"] as Int
                     arguments.containsKey("fineLOC") -> fineLOC = arguments["fineLOC"] as Int
                     // 监测权限
@@ -75,13 +68,17 @@ class TencentAD : MethodCallHandler, RequestPermissionsResultListener {
             "showSplash" -> {
                 val posId = "${arguments["posId"]}"
                 val bgPic = "${arguments["bgPic"]}"
+                val timeout = "${arguments["timeout"]}".toInt()
+                val range = "${arguments["range"]}".toDouble()
                 if (splashAD != null) splashAD?.closeAD()
                 splashAD = SplashAD(
                         registrar.activity(),
                         registrar.messenger(),
                         posId,
                         bgPic,
-                        null
+                        null,
+                        timeout,
+                        range
                 )
                 splashAD?.showAD()
             }
@@ -152,8 +149,7 @@ class TencentAD : MethodCallHandler, RequestPermissionsResultListener {
         private lateinit var registrar: Registrar
         private lateinit var instance: TencentAD
         private val UNIFIED_INTERS_AD_MAP: MutableMap<String, IntersAD?> = HashMap()
-        internal val activity get() = acts
-        public lateinit var acts: Activity
+        internal val activity get() = registrar.activity()
 
         // 插件注册
         @JvmStatic

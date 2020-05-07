@@ -17,16 +17,14 @@ enum BannerEvent {
 typedef BannerCallback = Function(BannerEvent event, dynamic args);
 
 class UnifiedBannerAd extends StatefulWidget {
-  UnifiedBannerAd(
-    this.posId, {
-    Key key,
-    this.adEventCallback,
-    this.refreshOnCreate,
-  }) : super(key: key);
+  UnifiedBannerAd(this.posId,
+      {Key key, this.adEventCallback, this.refreshOnCreate, this.backgroundColor = "#ffffff"})
+      : super(key: key);
   static final double ratio = 64; // 宽高比
   final String posId;
   final BannerCallback adEventCallback;
   final bool refreshOnCreate;
+  final String backgroundColor;
 
   @override
   UnifiedBannerAdState createState() => UnifiedBannerAdState();
@@ -34,9 +32,24 @@ class UnifiedBannerAd extends StatefulWidget {
 
 class UnifiedBannerAdState extends State<UnifiedBannerAd> {
   MethodChannel _methodChannel;
-
+  String oldBgColor = "";
+  bool inited = false;
   @override
   Widget build(BuildContext context) {
+    //start-setbg
+    //这里判断是否需要重新设置广告的背景色
+    Future.microtask(() async {
+      await Future.doWhile(() async {
+        await Future.delayed(Duration(milliseconds:10));
+        return inited == false;
+      });
+      if (this.widget.backgroundColor != oldBgColor) {
+        this.oldBgColor = this.widget.backgroundColor;
+        this.setBgColor(this.widget.backgroundColor);
+      }
+    });
+    //end-setbg
+
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return UiKitView(
         viewType: '$BANNER_AD_ID',
@@ -54,6 +67,7 @@ class UnifiedBannerAdState extends State<UnifiedBannerAd> {
   }
 
   void _onPlatformViewCreated(int id) {
+    this.inited = true;
     this._methodChannel = MethodChannel('$BANNER_AD_ID\_$id');
     this._methodChannel.setMethodCallHandler(_handleMethodCall);
     if (this.widget.refreshOnCreate == true) {
@@ -94,6 +108,7 @@ class UnifiedBannerAdState extends State<UnifiedBannerAd> {
     }
   }
 
+  Future<void> setBgColor(String clr) async => await _methodChannel.invokeMethod('setBgColor', clr);
   Future<void> closeAD() async => await _methodChannel.invokeMethod('destroy');
   Future<void> loadAD() async => await _methodChannel.invokeMethod('loadAD');
 }

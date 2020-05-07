@@ -23,13 +23,14 @@ class SplashAD(
         messenger: BinaryMessenger?,
         private val posId: String,
         bgPic: String?,
-        private var instance: SplashAD?
+        private var instance: SplashAD?,
+        var timeout: Int,
+        var range: Double
 ) : SplashADListener {
     private val methodChannel = MethodChannel(messenger, O.SPLASH_AD_ID)
     private val container = FrameLayout(context)
 
-    fun showAD() = fetchSplashAD(activity, null, O.APP_ID, posId, this, 0)
-
+    fun showAD() = fetchSplashAD(activity, null, O.APP_ID, posId, this, timeout)
     fun closeAD() {
         methodChannel.setMethodCallHandler(null)
         val parent = container.parent as ViewGroup
@@ -101,7 +102,9 @@ class SplashAD(
                 Log.i(TAG, "广告背景未获取, 资源:$bgPic", e)
             }
         }
-        container.layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-        activity.addContentView(container, LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        val lp = LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        lp.bottomMargin = (context.resources.displayMetrics.heightPixels * (1 - range)).toInt()
+        container.layoutParams = lp
+        activity.addContentView(container, lp)
     }
 }

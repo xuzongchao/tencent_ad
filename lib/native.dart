@@ -27,12 +27,14 @@ class NativeExpressAd extends StatefulWidget {
     this.requestCount: 5,
     this.callback,
     this.refreshOnCreate,
+    this.controller
   }) : super(key: key);
 
   final String posId;
   final int requestCount; // 广告计数请求，默认值是5
   final NativeADCallback callback;
   final bool refreshOnCreate;
+  final NativeAdController controller;
 
   @override
   NativeExpressAdState createState() => NativeExpressAdState();
@@ -40,7 +42,11 @@ class NativeExpressAd extends StatefulWidget {
 
 class NativeExpressAdState extends State<NativeExpressAd> {
   MethodChannel _methodChannel;
-
+  @override
+  void initState() { 
+    super.initState();
+    this.widget.controller.
+  }
   @override
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -109,6 +115,8 @@ class NativeExpressAdState extends State<NativeExpressAd> {
     }
   }
 
+  Future<void> show() async => await _methodChannel.invokeMethod('show')
+
   Future<void> closeAd() async => await _methodChannel.invokeMethod('close');
 
   Future<void>refreshAd() async =>
@@ -149,7 +157,7 @@ class NativeExpressAdWidgetState extends State<NativeExpressAdWidget> {
       posId: widget.posId,
       requestCount: widget.requestCount,
       callback: _adEventCallback,
-      refreshOnCreate: true,
+      refreshOnCreate: false,
     );
   }
 
@@ -174,4 +182,8 @@ class NativeExpressAdWidgetState extends State<NativeExpressAdWidget> {
       return;
     }
   }
+}
+
+class NativeAdController{
+  NativeExpressAdState
 }

@@ -16,12 +16,14 @@ typedef SplashAdEventCallback = Function(
 class SplashAd {
   final String posId;
   final String bgPic;
+  final int timeout;
+  final double range;
 
   final SplashAdEventCallback callBack;
 
   MethodChannel _methodChannel;
 
-  SplashAd(this.posId, {this.bgPic, this.callBack}) {
+  SplashAd(this.posId, {this.bgPic, this.callBack, this.timeout = 5000, this.range = 1}) {
     this._methodChannel = MethodChannel(SPLASH_AD_ID);
     this._methodChannel.setMethodCallHandler(_handleMethodCall);
   }
@@ -54,6 +56,8 @@ class SplashAd {
     await TencentAD.channel.invokeMethod('showSplash', {
       'posId': posId,
       'bgPic': bgPic,
+      'timeout': timeout,
+      'range': range
     });
   }
 
