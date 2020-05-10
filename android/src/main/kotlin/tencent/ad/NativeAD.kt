@@ -2,16 +2,21 @@ package tencent.ad
 
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
+import android.text.Layout
 import android.util.Log
 import android.view.View
 import android.view.View.MeasureSpec.*
 import android.view.View.OnLayoutChangeListener
+import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import android.widget.FrameLayout.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+import androidx.core.view.children
 import com.qq.e.ads.cfg.DownAPPConfirmPolicy
 import com.qq.e.ads.cfg.VideoOption.AutoPlayPolicy.WIFI
 import com.qq.e.ads.cfg.VideoOption.Builder
@@ -27,6 +32,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.platform.PlatformView
 import tencent.ad.O.TAG
+import java.lang.Exception
 import java.lang.annotation.Native
 
 class NativeAD(
@@ -35,7 +41,7 @@ class NativeAD(
         id: Int,
         params: Map<String, Any>
 ) : PlatformView, MethodCallHandler, NativeExpressADListener, OnLayoutChangeListener {
-    private var nativeExpressADView: NativeExpressADView? = null
+    private var nativeExpressADView: NativeExpressADView?=null
     private val methodChannel: MethodChannel
     private val container: FrameLayout
     private val posId = "${params["posId"]}"
@@ -48,6 +54,7 @@ class NativeAD(
             this
     )
     private var adList: List<NativeExpressADView> = ArrayList()
+    private var bgColor: String = "#ffffffff"
 
     init {
         checkNotNull(O.APP_ID) { "在创建广告视图之前，必须先配置应用ID" }
@@ -59,6 +66,7 @@ class NativeAD(
             count = params["count"] as Int
         }
         nativeExpressAD.setDownAPPConfirmPolicy(DownAPPConfirmPolicy.NOConfirm)
+
     }
 
     override fun onMethodCall(methodCall: MethodCall, result: Result) {
@@ -74,6 +82,11 @@ class NativeAD(
             "show" -> {
                 show()
                 result.success(true)
+            }
+            "setBgColor" -> {
+                var argument = methodCall.arguments as String
+                this.bgColor = argument
+                setBgColor(argument)
             }
             else -> result.notImplemented()
         }
@@ -94,6 +107,48 @@ class NativeAD(
         nativeExpressAD.loadAD(count)
     }
 
+    fun setBgColor(colorStr: String){
+        try {
+            var jsStr = """
+            javascript:(function() {
+                document.body.firstElementChild.style.backgroundColor = "${colorStr}"
+            })()
+            """
+
+            var webview = findWebView(nativeExpressADView!!)
+            if (webview != null) {
+                if(webview is com.tencent.smtt.sdk.WebView) {
+                    var v = webview as com.tencent.smtt.sdk.WebView
+                    v.loadUrl(jsStr)
+                }else if(webview is WebView){
+                    var v = webview as WebView
+                    v.loadUrl(jsStr)
+                }
+            }
+        }catch (e:Exception){
+            Log.e("adError>>>", "改颜色报错")
+        }
+//        try{
+//            nativeExpressADView!!.setBackgroundColor(Color.BLACK)
+//            (nativeExpressADView as ViewGroup).children.first().setBackgroundColor(Color.BLACK)
+//        }catch(e:Exception){
+//            Log.e("ff", e.stackTrace.toString())
+//        }
+    }
+
+    fun findWebView(view: View): View? {
+        try {
+            if (view is com.tencent.smtt.sdk.WebView || view is WebView) {
+                return view
+            } else {
+                var child = (view as ViewGroup).children.first()
+                return findWebView(child)
+            }
+        }catch (e:Exception){
+            return view
+        }
+    }
+
 
 ///展示广告，比较缓存列表中所有广告，选择ecpm价格最高的展示
     private fun show(){
@@ -105,11 +160,16 @@ class NativeAD(
 
 //      start-getbest:选择价格最高的广告
         var current = adList[0]
-        for (index in 0 .. adList.count() - 1){
-            val now = adList[index]
-            if(now.boundData.ecpm > current.boundData.ecpm){
-                current = now
+        try {
+            for (index in 0..adList.count() - 1) {
+                val now = adList[index]
+                if (now.boundData.ecpm > current.boundData.ecpm) {
+                    current = now
+                }
             }
+            adList -= current
+        }catch(e:Exception){
+            Log.e("广告错误", "选择高价广告错误")
         }
 //      end-getbest
 
@@ -124,8 +184,9 @@ class NativeAD(
         nativeExpressADView!!.addOnLayoutChangeListener(this)
         container.addView(nativeExpressADView)
         nativeExpressADView!!.render()  // 广告可见才会产生曝光，否则将无法产生收益。
-        methodChannel.invokeMethod("onAdLoaded", null)
 //      end-renderad
+
+        setBgColor(this.bgColor)
     }
 
 
@@ -151,6 +212,8 @@ class NativeAD(
 
     override fun onADLoaded(adList: List<NativeExpressADView>) {
         this.adList = adList
+        show()
+        methodChannel.invokeMethod("onAdLoaded", null)
     }
 
     override fun onRenderFail(nativeExpressADView: NativeExpressADView) =
@@ -160,8 +223,10 @@ class NativeAD(
         methodChannel.invokeMethod("onRenderSuccess", null)
     }
 
-    override fun onADExposure(nativeExpressADView: NativeExpressADView) =
-            methodChannel.invokeMethod("onAdExposure", null)
+    override fun onADExposure(nativeExpressADView: NativeExpressADView) {
+        methodChannel.invokeMethod("onAdExposure", null)
+        setBgColor(this.bgColor)
+    }
 
     override fun onADClicked(nativeExpressADView: NativeExpressADView) =
             methodChannel.invokeMethod("onAdClicked", null)
